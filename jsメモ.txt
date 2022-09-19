@@ -1,0 +1,51 @@
+
+npmはnode.jsの世界最大のパッケージレジストリおよび、jsパッケージを管理するためのCLIツールのこと
+
+npmではpackage.jsonがあるディレクトリが一つのプロジェクト(=パッケージ)となる。
+    そのディレクトリ上でnpmコマンドを実行するのが普通
+
+node_modulesは依存しているパッケージの仮置き場であり、編集してはいけない。(.gitignoreに入れるのが普通)
+
+npxはパッケージをグローバルインストールせずに直接実行する
+
+npm (node package manager)   node.jsの基本となるパッケージマネージャー
+npx (node package executer)  パッケージをグローバルインストールせずに実行できるもの
+nvm (node version manager)   node.js本体のバージョン管理を行うツール
+
+<npmの主なコマンド>
+npm --version (-v)              
+npmのバージョンを表示
+
+npm install "package name"@'version number'      
+プロジェクト(カレントディレクトリ)配下のnode_modulesディレクトリにパッケージをローカルインストールする
+
+npm install -g "package name"@'version number'      
+npmのルート配下のnode_modulesディレクトリにパッケージをグローバルインストールする
+(他のコマンドでも、-gオプションはグローバルを表す)
+
+npm install
+package.jsonに記載されているパッケージを一括インストールする
+
+npm install --save-dev "package name"
+カレントディレクトリに指定のパッケージをインストールするときにpackage.jsonの
+devDependencies(開発専用パッケージ)欄にパッケージ名が記録される。
+
+npm root -g                     
+npmのルートディレクトリのパスを表示する
+
+npm init                        
+実行したディレクトリをプロジェクトのルートディレクトリにする(package.jsonが生成される)
+
+npm list(ls) 
+インストールされているパッケージを一覧表示する
+
+npm outdated
+アップデートできるパッケージの一覧が表示される
+
+npm update "package name"
+パッケージをアップデートする
+
+npm run "scripts.hoge"
+package.jsonのscriptsに記載されているコマンドを実行する。
+npm startはnpm run startのエイリアス(test, buildなどよく使うものはエイリアスが登録されている)
+
