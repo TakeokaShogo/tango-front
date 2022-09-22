@@ -1,13 +1,263 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+
+.ja i, .en i, .popup-box {
+    /* 表示、非表示切り替え用 */
+    display: none;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+:root {
+    /* 変数一覧 */
+    --header-color: #00a4b3;
+    --header-icon-color: #00434a;
+    --pulldown-arrow-color: #007885;
+    --base-color: #ebebeb;
+    --word-box-back-color: #ffffff;
+    --en-word-color: #ff7700;
+    --category-red: rgb(231, 112, 112);
+    --category-yellow: rgb(216, 216, 0);
+    --category-button-border-color: gray;
+    --popup-border: rgb(201, 201, 201);
+    --popup-background: #ffffff;
+
+    /* 変数一覧
+    --header-color: #00a4b3;
+    --header-icon-color: #00434a;
+    --base-color: #ebebeb;
+    --word-box-back-color: #ffffff;
+    --en-word-color: #ed6f00; */
+
+    --header-fontsize: 1.2rem;
+    --header-height: 3.5rem;
+    --all-radius: 5px;
+    --toggle-box-line-thickness: 1.5px;
 }
+
+body {
+    margin: 0;
+    padding: 0;
+    font-weight: normal;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: var(--base-color);
+}
+
+/* inline */
+select {
+    margin: 0;
+    padding: 0;
+    box-sizing: content-box;
+    border: none;
+    appearance: none;
+}
+
+/* inline */
+button {
+    /* 背景を透明化 */
+    background-color: transparent;
+    display: block;
+}
+
+/* inline */
+i {
+    display: block;
+}
+
+/* block !!!!!!!!!!! */
+p {
+    margin: 0;
+    padding: 0;
+}
+
+/* inline */
+label {
+    display: block;
+}
+
+
+.pull-down select, .toggle-box, .word-box, .category-button, .popup-box {
+    border-radius: var(--all-radius);
+}
+
+.header {
+    background-color: var(--header-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    /* borderとpaddingを含めて幅を100%にする */
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--header-fontsize);
+    padding: 0.5rem 4vw;
+    height: var(--header-height);
+}
+
+.pull-down {
+    /* 背景色を透明にする */
+    /* background-color: transparent; */
+    /* 親要素から継承 */
+    /* font-size: inherit; */
+    /* 子要素のposition absolute を有効化するために必要 */
+    position: relative;
+    width: 8.8rem;
+}
+
+.pull-down select {
+    color: var(--header-icon-color);
+    background-color: transparent;
+    font-size: 1.4rem;
+    padding: 2% 0;
+    padding-right: 0;
+    width: 100%;
+}
+
+.pull-down .down-arrow {
+    color: var(--pulldown-arrow-color);
+    font-size: 1.1rem;
+    position: absolute;
+    top: 0.6rem;
+    right: 0;
+    /* クリックの邪魔にならないように設定 */
+    pointer-events: none;
+}
+
+.tool-space {
+    color: var(--header-icon-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* widthやheightで明示的にサイズを指定すると、子要素はそのサイズを超えなくなる */
+    width: 11.4rem;
+}
+
+.toggle-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 5.5rem;
+    font-size: 1.6rem;
+    padding: 0.3rem;
+    border: var(--toggle-box-line-thickness) solid var(--header-icon-color);
+}
+
+.ja, .en {
+    box-sizing: border-box;
+    width: 50%;
+    text-align: center;
+    position: relative;
+}
+
+.ja {
+    border-right: var(--toggle-box-line-thickness) solid var(--header-icon-color);
+}
+
+.ja i, .en i {
+    position: absolute;
+    /* absoluteの中央寄せ */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+}
+
+.popup-box {
+    border: 1px solid var(--popup-border);
+    position: absolute;
+    top: 0;
+    right: 5rem;
+    top: var(--header-height);
+    width: 200px;
+    background-color: var(--popup-background);
+    text-align: center;
+    margin-top: 3px;
+    padding: 1.5rem 0;
+}
+
+.popup-box p {
+    font-size: 1.1rem;
+    width: 12rem;
+    margin: 0 auto;
+}
+
+.popup-box .popup-text {
+    font-size: 1.0rem;
+    margin: 0 auto;
+    margin-top: 1rem;
+    width: 8rem;
+    text-align: left;
+    position: relative;
+}
+
+.popup-box input {
+    margin-left: 1rem;
+    width: 1.3rem;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.word-list {
+    margin-top: calc(var(--header-height) + 1rem);
+}
+
+.word-box {
+    /* border: 1px solid gray; */
+    background-color: var(--word-box-back-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 60vw;
+    /* スマホ用 */
+    min-width: 320px;
+    margin: 0.8rem auto;
+    padding: 1rem 0;
+}
+
+.word-box i {
+    width: 15%;
+    text-align: center;
+}
+
+.category-box {
+    width: 15%;
+}
+
+.category-button {
+    --side-length: 1.6rem;
+    width: var(--side-length);
+    height: var(--side-length);
+    border: 2px solid var(--category-button-border-color);
+    margin: 0 auto;
+}
+
+.category-button.none {
+    background-color: transparent;
+}
+
+.category-button.red {
+    background-color: var(--category-red);
+}
+
+.category-button.yellow {
+    background-color: var(--category-yellow);
+}
+
+.en-word {
+    width: 30%;
+    text-align: left;
+    color: var(--en-word-color);
+}
+
+.ja-meaning {
+    width: 40%;
+    /* テキストの両端揃え */
+    text-align: justify;
+}
+
+@media screen and (min-width: 960px) {
+    .tool-space {
+        width: 14rem;
+    }
+}
+

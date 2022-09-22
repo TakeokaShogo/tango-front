@@ -47,5 +47,5 @@ npm update "package name"
 
 npm run "scripts.hoge"
 package.jsonのscriptsに記載されているコマンドを実行する。
-npm startはnpm run startのエイリアス(test, buildなどよく使うものはエイリアスが登録されている)
+npm startはnpm run startのエイリアス(test, などよく使うものはエイリアスが登録されている)
 
