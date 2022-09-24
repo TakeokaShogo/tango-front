@@ -12,6 +12,9 @@
 Githubからherokuにプッシュ
 
 スリープモードにならないように定期的にhttpリクエスト
+    
+セクション切り替えのとき、wordListDataから直接いらないオブジェクトを消去するのではなく、
+currentSectionを参照して、表示する文を計算するようにする
 
 <API仕様>
 /   (GET)
@@ -23,17 +26,31 @@ Githubからherokuにプッシュ
         {
             id:"1",
             category:"none",
-            en_word:"improve",
-            ja_meaning:["向上させる", "良くなる"]
+            enWord:"improve",
+            jaMeaning:["向上させる", "良くなる"]
+            enIsDisplayed: true,        //React内で追加
+            jaIsDisplayed: true,        //React内で追加
         },
         {
             id:"2",
             category:"none",
-            en_word:"relate",
-            ja_meaning:["関連付ける", "関連する"]
+            enWord:"relate",
+            jaMeaning:["関連付ける", "関連する"]
+            enIsDisplayed: true,        //React内で追加
+            jaIsDisplayed: true,        //React内で追加
         },
         ...
     ]}
 /word_list(word_category?)  (PUT)
     特定の単語のカテゴリーを更新する
     (REST APIに基づいてリソースとURLを結びつけるなら、単語一覧のテーブルとカテゴリーのテーブルは分けるべき？)
+[
+    {
+        id:1,
+        category: "red",
+        enWord: "hoge",
+        enIsDisplayed: true,
+        jaIsDisplayed: true,
+        jaMeaning: ["HI"],
+    }
+];

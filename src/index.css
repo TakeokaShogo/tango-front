@@ -4,6 +4,10 @@
     display: none;
 }
 
+.show {
+    display: block !important;
+}
+
 :root {
     /* 変数一覧 */
     --header-color: #00a4b3;
@@ -147,7 +151,7 @@ label {
     position: relative;
 }
 
-.ja {
+.en {
     border-right: var(--toggle-box-line-thickness) solid var(--header-icon-color);
 }
 
