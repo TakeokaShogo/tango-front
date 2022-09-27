@@ -2,8 +2,7 @@
 export function addIsDisplayedProperty(wordList) {
     let newWordList = []; 
     for (const wordObject of wordList) {
-        wordObject.enIsDisplayed = true;
-        wordObject.jaIsDisplayed = true;
+        wordObject.isDisplayed = {en:true, ja:true};
         newWordList.push(wordObject);
     }
     return newWordList;

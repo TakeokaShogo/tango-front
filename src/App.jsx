@@ -1,31 +1,101 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useReducer } from "react"
 import { addIsDisplayedProperty } from "./helper"
+import {WordBox} from "./WordBox"
+import {SectionPullDown} from './SectionPullDown'
+import {FilterIcon} from "./FilterIcon"
+import {ShuffleIcon} from "./ShuffleIcon"
+import {ToggleBox} from "./ToggleBox"
+import {PopupBox} from "./PopupBox"
 
 const ORIGIN = "http://192.168.0.117:5000";
 
 export function App() {
     //stateは使用する順に並んでいる
-    const [isLoaded, setIsLoaded] = useState(false);
     //配列とオブジェクトは参照型なので、変数に格納してもコピーされない
     //配列やオブジェクトのコピーを作るときは、concatなどの関数を使う!!
-    const [wordListData, setWordListData] = useState([]);
-    //セクション切り替えのとき、wordListDataから直接いらないオブジェクトを消去するのではなく、
-    //currentSectionを参照して、表示する文を計算するようにする
+    //concatは浅いコピー？
+    // const [wordListData, setWordListData] = useState([]);
+    const [toggleIsPushed, toggleDispatch] = useReducer((prevState, action) => {
+        switch (action.type) {
+            case "en":
+                return {en:!prevState.en, ja:prevState.ja};
+            case "ja":
+                return {en:prevState.en, ja:!prevState.ja};
+            default:
+                return prevState;
+        }
+    }, {en:false, ja:false})
+    
+    const [stateWordListData, dispatch] = useReducer((prevState, action) => {
+        const nWordListData = prevState.concat();
+
+        switch (action.type) {
+            case "init":
+                return action.wordListData;
+
+            case "changeAllDisplay":
+                for (let iWord of nWordListData) {
+                    //配列は参照型なので直接代入
+                    iWord.isDisplayed[action.language] = !toggleIsPushed[action.language];
+                }
+                //set~の関数を実行した後でも、処理はそこで終わらない
+                //(その後のset~系の関数も実行される)
+                return nWordListData;
+
+            case "changeOneDisplay":
+                const oWord = nWordListData.find(i => i.id === action.id);
+                const isDisplayed = oWord.isDisplayed[action.language];
+                oWord.isDisplayed[action.language] = !isDisplayed;
+                return nWordListData;
+
+            case "changeCategory":
+                const cWord = nWordListData.find(i => i.id === action.id);
+                let newCategory = "";
+                //配列とオブジェクトは参照型なので、変数に格納してもコピーされない
+                //参照型を格納した変数に変更を行ってしまったので、再レンダリングがされなかった
+                switch (cWord.category) {
+                    case "none":
+                        newCategory = "red";
+                        break;
+                    case "red":
+                        newCategory = "yellow";
+                        break;
+                    case "yellow":
+                        newCategory = "none";
+                        break;
+                    default:
+                        break;
+                }
+                //参照型なのでそのまま代入する
+                cWord.category = newCategory;
+                return nWordListData;
+
+            default:
+                return prevState;
+        }
+    }, [])
     const [currentSection, setCurrentSection] = useState("ALL");
-    const [enToggleIsPushed, setEnToggleIsPushed] = useState(false);
-    const [jaToggleIsPushed, setJaToggleIsPushed] = useState(false);
+    const handleSectionChanged = (e) => {
+        setCurrentSection(e.target.value);
+    }
+    const switchButton = (language) => {
+        toggleDispatch({type:language});
+        dispatch({type:"changeAllDisplay", language:language})
+    }
+
     const [isShownCategory, setIsShownCategory] = useState({none:true, red:true, yellow:true});
     const [hasShuffeled, setHasShuffeled] = useState(false);
 
-    let cWordListData = wordListData.concat();
+    //currentSectionを参照してcWordListDataを整理した後に、
+    //isShowCategoryを参照してcWordListDataを整理する
 
     useEffect(
         () => {
             fetch(ORIGIN + "/word_list").then(response => response.json())
             .then(
                 (result) => {
-                    setIsLoaded(true);
-                    setWordListData(addIsDisplayedProperty(result.top));
+                    const w = {type:"init", wordListData:addIsDisplayedProperty(result.top)};
+                    dispatch(w);
                 },
                 (error) => {
                     //エラー処理を追加する
@@ -37,76 +107,30 @@ export function App() {
         []
     );
 
-    const switchEnButton = () => {
-        for (let cWord of cWordListData) {
-            //配列は参照型なので直接代入
-            cWord.enIsDisplayed = enToggleIsPushed;
-        }
-        //set~の関数を実行した後でも、処理はそこで終わらない
-        //(その後のset~系の関数も実行される)
-        setWordListData(cWordListData);
-        setEnToggleIsPushed(!enToggleIsPushed);
+    let cWordListData = stateWordListData.concat();
+    if (currentSection !== "ALL") {
+        cWordListData = cWordListData.slice((currentSection-1)*100, currentSection*100);
+        console.log(cWordListData);
     }
-
-    const switchJaButton = () => {
-        for (let cWord of cWordListData) {
-            //配列は参照型なので直接代入
-            cWord.jaIsDisplayed = jaToggleIsPushed;
-        }
-        setWordListData(cWordListData);
-        setJaToggleIsPushed(!jaToggleIsPushed);
-    }
-
-
     // React要素の配列はそのままrenderできる
     const wordList = [];
     for (let cWord of cWordListData) {
-        const rotateCategory = () => {
-            let newCategory = "";
-            //配列とオブジェクトは参照型なので、変数に格納してもコピーされない
-            //参照型を格納した変数に変更を行ってしまったので、再レンダリングがされなかった
-            switch (cWord.category) {
-                case "none":
-                    newCategory = "red";
-                    break;
-                case "red":
-                    newCategory = "yellow";
-                    break;
-                case "yellow":
-                    newCategory = "none";
-                    break;
-                default:
-                    break;
-            }
-            //参照型なのでそのまま代入する
-            cWord.category = newCategory;
-            setWordListData(cWordListData);
-        }
-        const switchEnIsDisplayed = () => {
-            cWord.enIsDisplayed = !cWord.enIsDisplayed;
-            setWordListData(cWordListData);
-        }
-        const switchJaIsDisplayed = () => {
-            cWord.jaIsDisplayed = !cWord.jaIsDisplayed;
-            setWordListData(cWordListData);
-        }
-        const wordBox = <WordBox key={cWord.id} word={cWord} categoryButtonOnClick={rotateCategory}
-            switchEnIsDisplayed={switchEnIsDisplayed} switchJaIsDisplayed={switchJaIsDisplayed} />;
+        const wordBox = <WordBox key={cWord.id} word={cWord} 
+            categoryButtonOnClick={() => dispatch({type:"changeCategory", id:cWord.id})} 
+            switchEnIsDisplayed={() => dispatch({type:"changeOneDisplay", id:cWord.id, language:"en"})} 
+            switchJaIsDisplayed={() => dispatch({type:"changeOneDisplay", id:cWord.id, language:"ja"})} />;
         wordList.push(wordBox);
     }
-
-
 
     return (
         <>
         {/* <div> */}
         <header className="header">
-            <SectionPullDown />                      
+            <SectionPullDown whenSectionChanged={handleSectionChanged} />                      
             <div className="tool-space">
                 <FilterIcon />
                 <ShuffleIcon />
-                <ToggleBox whenEnPushed={switchEnButton} whenJaPushed={switchJaButton}
-                 enToggleIsPushed={enToggleIsPushed} jaToggleIsPushed={jaToggleIsPushed} />
+                <ToggleBox whenPushed={switchButton} toggleIsPushed={toggleIsPushed} />
             </div>
             <PopupBox />
         </header>
@@ -119,109 +143,3 @@ export function App() {
     )
 }
 
-function SectionPullDown(props) {
-    return (
-            <div className="pull-down">
-                <select name="prefecture" id="section-pulldown">
-                    <option value="ALL">ALL Section</option>
-                    <option value={1}>Section 1</option>
-                    <option value={2}>Section 2</option>
-                    <option value={3}>Section 3</option>
-                    <option value={4}>Section 4</option>
-                    <option value={5}>Section 5</option>
-                    <option value={6}>Section 6</option>
-                    <option value={7}>Section 7</option>
-                    <option value={8}>Section 8</option>
-                    <option value={9}>Section 9</option>
-                    <option value={10}>Section 10</option>
-                    <option value={11}>Section 11</option>
-                    <option value={12}>Section 12</option>
-                    <option value={13}>Section 13</option>
-                    <option value={14}>Section 14</option>
-                    <option value={15}>Section 15</option>
-                    <option value={16}>Section 16</option>
-                    <option value={17}>Section 17</option>
-                    <option value={18}>Section 18</option>
-                    <option value={19}>Section 19</option>
-                </select>
-                <i className="down-arrow fa-solid fa-chevron-down" />
-            </div>
-    )
-}
-
-function FilterIcon(props) {
-    return (
-        <i className="fa-solid fa-filter fa-lg" />
-    )   
-}
-
-function ShuffleIcon(props) {
-    return (
-        <i className="fa-solid fa-shuffle fa-lg" />
-    )
-}
-
-function ToggleBox(props) {
-    // props:
-    //     whenEnPushed      <Function>
-    //     whenJaPushed      <Function>
-    //     enToggleIsPushed     <boolean>
-    //     jaToggleIsPushed     <boolean>
-
-    const SlashClass = "fa-solid fa-slash" + ' ';
-    const enSlashClass = SlashClass + (props.enToggleIsPushed ? "show" : '');
-    const jaSlashClass = SlashClass + (props.jaToggleIsPushed ? "show" : '');
-
-    return (
-        <div className="toggle-box">
-            <div className="en" onClick={props.whenEnPushed}>
-                en
-                <i className={enSlashClass}/>
-            </div>
-            <div className="ja" onClick={props.whenJaPushed}>
-                ja
-                <i className={jaSlashClass}/>
-            </div>
-        </div>
-    )
-}
-
-function PopupBox(props) {
-    return (
-        <div className="popup-box">
-            <p>表示するカテゴリー</p>
-            <label className="popup-text">マークなし<input type="checkbox" name id /></label>
-            <label className="popup-text">赤マーク<input type="checkbox" name id /></label>
-            <label className="popup-text">黄マーク<input type="checkbox" name id /></label>
-        </div>
-    )
-}
-
-function WordBox(props) {
-    // props:
-    //     word     <Object>,
-    //     categoryButtonOnClick    <Function>
-    //     switchEnIsDisplayed      <Function>
-    //     switchJaIsDisplayed      <Function>
-    const categoryButtonClass = "category-button" + ' ' + props.word.category;
-    const meaningText = []
-    for (const meaning of props.word.jaMeaning) {
-        meaningText.push(props.word.jaIsDisplayed ? meaning : "ーーーーー");
-        meaningText.push(<br />);
-    }
-
-    return (
-        <div className="word-box">
-            <div className="category-box">
-                <button className={categoryButtonClass} onClick={props.categoryButtonOnClick} />
-            </div>
-            <div className="en-word" onClick={props.switchEnIsDisplayed}>
-                {props.word.enIsDisplayed ? props.word.enWord : "-----"}
-            </div>
-            <div className="ja-meaning" onClick={props.switchJaIsDisplayed}>
-                {meaningText}
-            </div>
-            <i className="fa-solid fa-volume-high" />
-        </div>
-    )
-}
