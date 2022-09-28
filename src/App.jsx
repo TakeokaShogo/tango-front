@@ -1,5 +1,5 @@
 import { useEffect, useState, useReducer } from "react"
-import { addIsDisplayedProperty } from "./helper"
+import { addIsDisplayedProperty, shuffleArray } from "./helper"
 import {WordBox} from "./WordBox"
 import {SectionPullDown} from './SectionPullDown'
 import {FilterIcon} from "./FilterIcon"
@@ -74,6 +74,7 @@ export function App() {
                 return prevState;
         }
     }, [])
+
     const [currentSection, setCurrentSection] = useState("ALL");
     const handleSectionChanged = (e) => {
         setCurrentSection(e.target.value);
@@ -83,8 +84,16 @@ export function App() {
         dispatch({type:"changeAllDisplay", language:language})
     }
 
+    const [popupIsShown, setPopupIsShown] = useState(false);
+    const handlePopupIsPushed = () => {
+        setPopupIsShown((prevState) => !prevState);
+    }
     const [isShownCategory, setIsShownCategory] = useState({none:true, red:true, yellow:true});
-    const [hasShuffeled, setHasShuffeled] = useState(false);
+
+    const [hasShuffled, setHasShuffled] = useState(false);
+    const handleShuffled = () => {
+        setHasShuffled((prevState) => !prevState);
+    }
 
     //currentSectionを参照してcWordListDataを整理した後に、
     //isShowCategoryを参照してcWordListDataを整理する
@@ -110,7 +119,9 @@ export function App() {
     let cWordListData = stateWordListData.concat();
     if (currentSection !== "ALL") {
         cWordListData = cWordListData.slice((currentSection-1)*100, currentSection*100);
-        console.log(cWordListData);
+    }
+    if (hasShuffled) {
+        cWordListData = shuffleArray(cWordListData);
     }
     // React要素の配列はそのままrenderできる
     const wordList = [];
@@ -128,11 +139,11 @@ export function App() {
         <header className="header">
             <SectionPullDown whenSectionChanged={handleSectionChanged} />                      
             <div className="tool-space">
-                <FilterIcon />
-                <ShuffleIcon />
+                <FilterIcon isPushed={popupIsShown} whenPushed={handlePopupIsPushed} />
+                <ShuffleIcon isPushed={hasShuffled} whenPushed={handleShuffled} />
                 <ToggleBox whenPushed={switchButton} toggleIsPushed={toggleIsPushed} />
             </div>
-            <PopupBox />
+            <PopupBox isShown={popupIsShown} />
         </header>
         <div className="word-list" id="word-list">
             {/* React要素の配列はそのままrenderできる */}
@@ -142,4 +153,3 @@ export function App() {
         </>
     )
 }
-

@@ -12,6 +12,7 @@
     /* 変数一覧 */
     --header-color: #00a4b3;
     --header-icon-color: #00434a;
+    --icon-pushed-color: #37e5f4;
     --pulldown-arrow-color: #007885;
     --base-color: #ebebeb;
     --word-box-back-color: #ffffff;
@@ -132,6 +133,10 @@ label {
     align-items: center;
     /* widthやheightで明示的にサイズを指定すると、子要素はそのサイズを超えなくなる */
     width: 11.4rem;
+}
+
+.pushed {
+    color: var(--icon-pushed-color);
 }
 
 .toggle-box {
