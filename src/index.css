@@ -206,6 +206,14 @@ label {
     right: 0;
 }
 
+.red {
+    color: var(--category-red);
+}
+
+.yellow {
+    color: var(--category-yellow);
+}
+
 .word-list {
     margin-top: calc(var(--header-height) + 1rem);
 }

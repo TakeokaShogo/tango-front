@@ -1,11 +1,11 @@
 import { useEffect, useState, useReducer } from "react"
-import { addIsDisplayedProperty, shuffleArray } from "./helper"
-import {WordBox} from "./WordBox"
-import {SectionPullDown} from './SectionPullDown'
-import {FilterIcon} from "./FilterIcon"
-import {ShuffleIcon} from "./ShuffleIcon"
-import {ToggleBox} from "./ToggleBox"
-import {PopupBox} from "./PopupBox"
+import { addIsDisplayedProperty, shuffleArray, shuffleArrayWithSeed } from "./script"
+import { WordBox } from "./WordBox"
+import { SectionPullDown } from './SectionPullDown'
+import { FilterIcon } from "./FilterIcon"
+import { ShuffleIcon } from "./ShuffleIcon"
+import { ToggleBox } from "./ToggleBox"
+import { PopupBox } from "./PopupBox"
 
 const ORIGIN = "http://192.168.0.117:5000";
 
@@ -26,7 +26,7 @@ export function App() {
         }
     }, {en:false, ja:false})
     
-    const [stateWordListData, dispatch] = useReducer((prevState, action) => {
+    const [stateWordListData, wordListDataDispatch] = useReducer((prevState, action) => {
         const nWordListData = prevState.concat();
 
         switch (action.type) {
@@ -79,22 +79,35 @@ export function App() {
     const handleSectionChanged = (e) => {
         setCurrentSection(e.target.value);
     }
-    const switchButton = (language) => {
-        toggleDispatch({type:language});
-        dispatch({type:"changeAllDisplay", language:language})
-    }
 
     const [popupIsShown, setPopupIsShown] = useState(false);
     const handlePopupIsPushed = () => {
         setPopupIsShown((prevState) => !prevState);
     }
-    const [isShownCategory, setIsShownCategory] = useState({none:true, red:true, yellow:true});
+    const [isShownCategory, isShownCategoryDispatch] = useReducer((prevState, action) => {
+        switch (action.type) {
+            case "none":
+                return {none:!prevState.none, red:prevState.red, yellow:prevState.yellow};
+            case "red":
+                return {none:prevState.none, red:!prevState.red, yellow:prevState.yellow};
+            case "yellow":
+                return {none:prevState.none, red:prevState.red, yellow:!prevState.yellow};
+            default:
+                return prevState;
+        }
+    }, {none:true, red:true, yellow:true});
 
-    const [hasShuffled, setHasShuffled] = useState(false);
+    const s = Math.floor(Math.random() * 10**8);
+    const [shuffleState, setShuffleState] = useState({isShuffled:false, seed:s});
     const handleShuffled = () => {
-        setHasShuffled((prevState) => !prevState);
+        const s = Math.floor(Math.random() * 10**8);
+        setShuffleState((prevState) => ({isShuffled:!prevState.isShuffled, seed:s}));
     }
 
+    const switchButton = (language) => {
+        toggleDispatch({type:language});
+        wordListDataDispatch({type:"changeAllDisplay", language:language})
+    }
     //currentSectionを参照してcWordListDataを整理した後に、
     //isShowCategoryを参照してcWordListDataを整理する
 
@@ -104,7 +117,7 @@ export function App() {
             .then(
                 (result) => {
                     const w = {type:"init", wordListData:addIsDisplayedProperty(result.top)};
-                    dispatch(w);
+                    wordListDataDispatch(w);
                 },
                 (error) => {
                     //エラー処理を追加する
@@ -120,16 +133,27 @@ export function App() {
     if (currentSection !== "ALL") {
         cWordListData = cWordListData.slice((currentSection-1)*100, currentSection*100);
     }
-    if (hasShuffled) {
-        cWordListData = shuffleArray(cWordListData);
+    if (shuffleState.isShuffled) {
+        cWordListData = shuffleArrayWithSeed(cWordListData, shuffleState.seed);
     }
+
+    if (!isShownCategory.none) {
+        cWordListData = cWordListData.filter(item => item.category.match("none") == null);
+    }
+    if (!isShownCategory.red) {
+        cWordListData = cWordListData.filter(item => item.category.match("red") == null);
+    }
+    if (!isShownCategory.yellow) {
+        cWordListData = cWordListData.filter(item => item.category.match("yellow") == null);
+    }
+
     // React要素の配列はそのままrenderできる
     const wordList = [];
     for (let cWord of cWordListData) {
         const wordBox = <WordBox key={cWord.id} word={cWord} 
-            categoryButtonOnClick={() => dispatch({type:"changeCategory", id:cWord.id})} 
-            switchEnIsDisplayed={() => dispatch({type:"changeOneDisplay", id:cWord.id, language:"en"})} 
-            switchJaIsDisplayed={() => dispatch({type:"changeOneDisplay", id:cWord.id, language:"ja"})} />;
+            categoryButtonOnClick={() => wordListDataDispatch({type:"changeCategory", id:cWord.id})} 
+            switchEnIsDisplayed={() => wordListDataDispatch({type:"changeOneDisplay", id:cWord.id, language:"en"})} 
+            switchJaIsDisplayed={() => wordListDataDispatch({type:"changeOneDisplay", id:cWord.id, language:"ja"})} />;
         wordList.push(wordBox);
     }
 
@@ -140,10 +164,10 @@ export function App() {
             <SectionPullDown whenSectionChanged={handleSectionChanged} />                      
             <div className="tool-space">
                 <FilterIcon isPushed={popupIsShown} whenPushed={handlePopupIsPushed} />
-                <ShuffleIcon isPushed={hasShuffled} whenPushed={handleShuffled} />
+                <ShuffleIcon isPushed={shuffleState.isShuffled} whenPushed={handleShuffled} />
                 <ToggleBox whenPushed={switchButton} toggleIsPushed={toggleIsPushed} />
             </div>
-            <PopupBox isShown={popupIsShown} />
+            <PopupBox popupIsShown={popupIsShown} isShownCategory={isShownCategory} whenChanged={isShownCategoryDispatch} />
         </header>
         <div className="word-list" id="word-list">
             {/* React要素の配列はそのままrenderできる */}
