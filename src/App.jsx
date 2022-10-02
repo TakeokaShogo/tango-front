@@ -1,5 +1,5 @@
 import { useEffect, useState, useReducer } from "react"
-import { addIsDisplayedProperty, shuffleArray, shuffleArrayWithSeed } from "./script"
+import { addIsDisplayedProperty, rotateCategory, shuffleArrayWithSeed } from "./script"
 import { WordBox } from "./WordBox"
 import { SectionPullDown } from './SectionPullDown'
 import { FilterIcon } from "./FilterIcon"
@@ -50,24 +50,10 @@ export function App() {
 
             case "changeCategory":
                 const cWord = nWordListData.find(i => i.id === action.id);
-                let newCategory = "";
                 //配列とオブジェクトは参照型なので、変数に格納してもコピーされない
                 //参照型を格納した変数に変更を行ってしまったので、再レンダリングがされなかった
-                switch (cWord.category) {
-                    case "none":
-                        newCategory = "red";
-                        break;
-                    case "red":
-                        newCategory = "yellow";
-                        break;
-                    case "yellow":
-                        newCategory = "none";
-                        break;
-                    default:
-                        break;
-                }
                 //参照型なのでそのまま代入する
-                cWord.category = newCategory;
+                cWord.category = action.nextCategory;
                 return nWordListData;
 
             default:
@@ -150,8 +136,34 @@ export function App() {
     // React要素の配列はそのままrenderできる
     const wordList = [];
     for (let cWord of cWordListData) {
+        const changeCategory = () => {
+            const nextCategory = rotateCategory(cWord.category);
+            const parameter = {
+                method: "PUT",
+                // mode: "cors",
+                headers: {
+                    "Content-Type":"application/json"
+                },
+                body: JSON.stringify({
+                    // id: cWord.id,
+                    nextCategory: nextCategory
+                })
+            }
+            //json()にしてしまうとレスポンスがない時に戻り値がjson形式でないとなってエラー
+            fetch(ORIGIN + "/word/" + cWord.id, parameter).then(response => response.text())
+            .then(
+                (result) => {
+                    wordListDataDispatch({type:"changeCategory", id:cWord.id, nextCategory:nextCategory})
+                },
+                (error) => {
+                    //エラー処理を追加する
+                    window.alert(error);
+                }
+            );
+
+        }
         const wordBox = <WordBox key={cWord.id} word={cWord} 
-            categoryButtonOnClick={() => wordListDataDispatch({type:"changeCategory", id:cWord.id})} 
+            categoryButtonOnClick={changeCategory} 
             switchEnIsDisplayed={() => wordListDataDispatch({type:"changeOneDisplay", id:cWord.id, language:"en"})} 
             switchJaIsDisplayed={() => wordListDataDispatch({type:"changeOneDisplay", id:cWord.id, language:"ja"})} />;
         wordList.push(wordBox);

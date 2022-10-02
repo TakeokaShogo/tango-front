@@ -42,22 +42,20 @@ class Random {
   }
 }
 
-// const rotateCategory = () => {
-//     let newCategory = "";
-//     let cWordListData = wordListData;
-//     switch (word.category) {
-//         case "none":
-//             newCategory = "red";
-//             break;
-//         case "red":
-//             newCategory = "yellow";
-//             break;
-//         case "yellow":
-//             newCategory = "none";
-//             break;
-//         default:
-//             break;
-//     }
-//     cWordListData[Number(word.id) - 1].category = newCategory;
-//     setWordListData(cWordListData);
-// }
+export const rotateCategory = (category) => {
+    let nextCategory = "";
+    switch (category) {
+        case "none":
+            nextCategory = "red";
+            break;
+        case "red":
+            nextCategory = "yellow";
+            break;
+        case "yellow":
+            nextCategory = "none";
+            break;
+        default:
+            break;
+    }
+    return nextCategory;
+}
