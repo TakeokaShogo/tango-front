@@ -14,6 +14,9 @@ export function WordBox(props) {
 
     return (
         <div className="word-box">
+            <div className="word-id">
+                {props.word.id}
+            </div>
             <div className="category-box">
                 <button className={categoryButtonClass} onClick={props.categoryButtonOnClick} />
             </div>

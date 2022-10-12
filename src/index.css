@@ -16,6 +16,7 @@
     --pulldown-arrow-color: #007885;
     --base-color: #ebebeb;
     --word-box-back-color: #ffffff;
+    --id-color: #9a9a9a;
     --en-word-color: #ff7700;
     --category-red: rgb(231, 112, 112);
     --category-yellow: rgb(216, 216, 0);
@@ -228,12 +229,21 @@ label {
     /* スマホ用 */
     min-width: 320px;
     margin: 0.8rem auto;
-    padding: 1rem 0;
+    padding: 1.5rem 0;
+    position: relative;
+    z-index: -1;
 }
 
 .word-box i {
     width: 15%;
     text-align: center;
+}
+
+.word-id {
+    position: absolute;
+    top: 0.2rem;
+    left: 0.2rem;
+    color: var(--id-color);
 }
 
 .category-box {
@@ -272,9 +282,14 @@ label {
     text-align: justify;
 }
 
+/* PC */
 @media screen and (min-width: 960px) {
     .tool-space {
         width: 14rem;
+    }
+
+    .word-box {
+        padding: 1rem 0;
     }
 }
 
