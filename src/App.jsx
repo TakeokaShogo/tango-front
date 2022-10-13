@@ -7,7 +7,8 @@ import { ShuffleIcon } from "./ShuffleIcon"
 import { ToggleBox } from "./ToggleBox"
 import { PopupBox } from "./PopupBox"
 
-const ORIGIN = "http://192.168.0.117:5000";
+// const ORIGIN = "http://192.168.0.117:5000";
+const ORIGIN = "";
 
 export function App() {
     //stateは使用する順に並んでいる
@@ -138,6 +139,9 @@ export function App() {
     for (let cWord of cWordListData) {
         const changeCategory = () => {
             const nextCategory = rotateCategory(cWord.category);
+            const prevCategory = cWord.category;
+            wordListDataDispatch({type:"changeCategory", id:cWord.id, nextCategory:nextCategory});
+
             const parameter = {
                 method: "PUT",
                 // mode: "cors",
@@ -153,10 +157,11 @@ export function App() {
             fetch(ORIGIN + "/word/" + cWord.id, parameter).then(response => response.text())
             .then(
                 (result) => {
-                    wordListDataDispatch({type:"changeCategory", id:cWord.id, nextCategory:nextCategory})
+
                 },
                 (error) => {
                     //エラー処理を追加する
+                    wordListDataDispatch({type:"changeCategory", id:cWord.id, nextCategory:prevCategory});
                     window.alert(error);
                 }
             );
