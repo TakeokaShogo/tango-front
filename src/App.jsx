@@ -8,7 +8,7 @@ import { ToggleBox } from "./ToggleBox"
 import { PopupBox } from "./PopupBox"
 
 // const ORIGIN = "http://192.168.0.117:5000";
-const ORIGIN = "";
+const ORIGIN = window.location.protocol+ "//" + window.location.hostname;
 
 export function App() {
     //stateは使用する順に並んでいる
@@ -100,7 +100,7 @@ export function App() {
 
     useEffect(
         () => {
-            fetch(ORIGIN + "/word_list").then(response => response.json())
+            fetch(ORIGIN + "/word_list/").then(response => response.json())
             .then(
                 (result) => {
                     const w = {type:"init", wordListData:addIsDisplayedProperty(result.top)};
